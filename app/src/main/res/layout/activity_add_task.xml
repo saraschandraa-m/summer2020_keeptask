@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".AddTaskActivity">
+
+
+    <!-- xda forum -->
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#ffffff"
+        android:minHeight="?attr/actionBarSize">
+
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/tl_add_task"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ffffff"
+        android:orientation="vertical">
+
+
+        <EditText
+            android:id="@+id/et_task_title"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Enter the task title" />
+
+
+        <RelativeLayout
+            android:id="@+id/rl_add_item"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:onClick="onAddListItemClicked"
+            android:padding="10dp">
+
+
+            <ImageView
+                android:id="@+id/iv_add_item"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_add_black" />
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_toEndOf="@+id/iv_add_item"
+                android:gravity="center_vertical"
+                android:text="Add List Item"
+                android:textColor="#000000" />
+
+        </RelativeLayout>
+
+
+        <LinearLayout
+            android:id="@+id/ll_dynamic_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onTaskAddClicked"
+            android:text="Add Task" />
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
