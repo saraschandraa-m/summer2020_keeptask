@@ -58,6 +58,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
 
             cursor.close();
+            database.close();
         }
         return tasks;
     }
@@ -68,6 +69,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(COL_ITEMS, task.items);
 
         database.update(TABLE_NAME, cv, COL_ID + "=" + task.id, null);
+        database.close();
     }
 
     public void deleteTask(SQLiteDatabase database, Task task) {

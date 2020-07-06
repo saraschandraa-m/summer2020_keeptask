@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -14,17 +16,25 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
-public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TasksHolder> {
+public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TasksHolder> implements Filterable {
 
     private Context context;
-    private ArrayList<Task> taskList;
+    private ArrayList<Task> taskList; // original arraylist
+    private ArrayList<Task> displayList;    //display arraylist
+    private ArrayList<Task> searchList;     //search filter arraylist
     private TaskUpdateListener listener;
+
+    private TaskFilter filter;
 
     public TasksAdapter(Context context, ArrayList<Task> taskList) {
         this.context = context;
         this.taskList = taskList;
+        this.displayList = (ArrayList<Task>) taskList.clone();
+        searchList = new ArrayList<>();
+        filter = new TaskFilter();
     }
 
     public void setListener(TaskUpdateListener listener) {
@@ -40,7 +50,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TasksHolder>
 
     @Override
     public void onBindViewHolder(@NonNull TasksHolder holder, int position) {
-        final Task item = taskList.get(position);
+        final Task item = displayList.get(position);
 
         holder.mTvTaskTitle.setText(item.taskName);
 
@@ -54,37 +64,78 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TasksHolder>
             RelativeLayout mRoot = view.findViewById(R.id.rl_view_root);
             if (taskItem.itemIsCompleted) {
                 mChItem.setChecked(true);
-                mChItem.setFocusable(false);
-                mChItem.setFocusableInTouchMode(false);
                 mTvTitle.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
-                mRoot.setFocusable(false);
-                mRoot.setFocusableInTouchMode(false);
+            } else {
+                mChItem.setChecked(false);
             }
 
             mTvTitle.setText(taskItem.itemName);
             mChItem.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
-                    if (checked) {
-                        listener.onTaskUpdate(taskItem, item);
-                    }
+
+                    listener.onTaskUpdate(taskItem, item, checked);
                 }
             });
 
-            mRoot.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    listener.onTaskUpdate(taskItem, item);
-                }
-            });
             holder.mLlDynamicViews.addView(view);
         }
     }
 
     @Override
     public int getItemCount() {
-        return taskList.size();
+        return displayList.size();
     }
+
+    @Override
+    public Filter getFilter() {
+        return filter;
+    }
+
+    public class TaskFilter extends Filter {
+
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            FilterResults results = new FilterResults();
+
+            searchList.clear();
+            if (charSequence != null) {
+                //Run the for loop with the original list
+                for (Task task : taskList) {
+                    if (task.taskName.toLowerCase().contains(charSequence.toString().toLowerCase())) {
+                        searchList.add(task);
+                    } else {
+
+                        ArrayList<TaskItem> taskItems = Task.convertItemsStringToArrayList(task.items);
+
+                        for (TaskItem taskItem : taskItems) {
+                            if (taskItem.itemName.toLowerCase().contains(charSequence.toString().toLowerCase())) {
+                                searchList.add(task);
+                            }
+                        }
+                    }
+
+                }
+
+                results.values = searchList;
+                results.count = searchList.size();
+            }
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            displayList = (ArrayList<Task>) filterResults.values;
+            notifyDataSetChanged(); //refreshing the adapter
+        }
+    }
+
+    public void clearFilter() {
+        displayList.clear();
+        displayList = (ArrayList<Task>) taskList.clone();
+        notifyDataSetChanged();
+    }
+
 
     class TasksHolder extends RecyclerView.ViewHolder {
 
@@ -99,6 +150,6 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TasksHolder>
     }
 
     public interface TaskUpdateListener {
-        void onTaskUpdate(TaskItem item, Task task);
+        void onTaskUpdate(TaskItem item, Task task, boolean checked);
     }
 }
